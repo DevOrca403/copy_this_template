@@ -47,11 +47,12 @@ if %errorlevel% neq 0 (
 )
 
 echo [INSTALL] Installing dependencies...
-conda env export --no-builds --from-history > environment.yml
+conda env create -f environment.yml -y
 if %errorlevel% neq 0 (
-	echo [INSTALL] Failed to export conda environment.
+	echo [INSTALL] Failed to import conda environment.
 	goto :EXIT_CONDA_ENVIRONMENT
 )
+conda develop ./src
 
 :: Deactivate conda environment
 :EXIT_CONDA_ENVIRONMENT
