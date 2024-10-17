@@ -1,0 +1,62 @@
+:: Author : Yoonha Hwang (DevOrca403)
+
+@echo off
+setlocal
+
+(SetProjectName)
+
+::Check if the current directory is the root of the project
+
+if not exist ".git" (
+    echo "[EXPORT] Current directory (%cd%) is not a root of the project."
+    exit /b 1
+)
+echo [EXPORT] Current directory %CD%.
+
+:: Check conda installed
+
+set CandidatePaths=( ^
+	"%USERPROFILE%\Anaconda3\Scripts\conda.exe" ^
+	"%USERPROFILE%\anaconda3\Scripts\conda.exe" ^
+)
+
+for %%i in %CandidatePaths% do (
+	if exist %%i (
+		set "CONDA_PATH=%%i"
+	)
+)
+
+if not defined CONDA_PATH (
+	echo [EXPORT] Conda is not installed. Please install conda first.
+	exit /b 1
+)
+
+for %%I in (%CONDA_PATH%) do (
+	set "SCRIPTS_PATH=%%~dpI"
+)
+call "%SCRIPTS_PATH%/activate.bat"
+
+:: Export dependencies
+
+echo [EXPORT] Exporting dependencies...
+
+call conda activate %projectName%
+if %errorlevel% neq 0 (
+	echo [EXPORT] Failed to activate conda environment.
+	exit /b 1
+)
+
+call conda env export --no-builds --from-history > environment.yml
+if %errorlevel% neq 0 (
+	echo [EXPORT] Failed to export conda environment.
+	goto :EXIT_CONDA_ENVIRONMENT
+)
+
+echo [EXPORT] Complete.
+
+:: Deactivate conda environment
+:EXIT_CONDA_ENVIRONMENT
+call conda deactivate
+
+endlocal
+@echo on
